@@ -1,5 +1,5 @@
 # AccelPunch_application
-AccelPunch: Monitoring application for Android
+AccelPunch: Simple boxing performance monitoring application for Android
 
 **Platform:** Android
 
