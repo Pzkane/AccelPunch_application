@@ -27,6 +27,8 @@ import com.accelpunch.parser.GlovesTokenizer;
 import com.accelpunch.storage.room.Bag;
 import com.accelpunch.storage.room.Glove;
 import com.accelpunch.storage.room.LocalDatabase;
+import com.accelpunch.storage.room.RoomEntity;
+import com.accelpunch.storage.service.LocalDatabaseService;
 import com.accelpunch.ui.dashboard.DashboardFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.jjoe64.graphview.GraphView;
@@ -37,21 +39,14 @@ import java.net.HttpURLConnection;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-
-    private ActivityMainBinding binding;
+    private ActivityMainBinding _binding;
     private AlertDialog.Builder _alertBuilder;
-    private Thread _databaseThread;
     static public Client clientGloves = null, clientBag = null;
     static public String glovesIp = "192.168.43.2", bagIp = "192.168.43.3";
     static public Integer glovesPort = 8266, bagPort = 8267;
-
     static public String serverIP;
     static public Integer serverPort = 3000;
-
-    static public String APData = "";
-
     static public boolean serverInitialized = false;
-
     static public LocalDatabase database;
     static public boolean databaseConnected = false;
 
@@ -59,18 +54,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        _binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(_binding.getRoot());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                R.id.navigation_home, R.id.navigation_dashboard)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+        NavigationUI.setupWithNavController(_binding.navView, navController);
         initLocalDatabase();
         showStartingDialog();
         initConnectedNodes();
@@ -81,17 +76,26 @@ public class MainActivity extends AppCompatActivity {
         database = Room
                 .databaseBuilder(getApplicationContext(), LocalDatabase.class, "punch-database-local")
                 .build();
-//        Thread clearDb = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                database.clearAllTables();
-//            }
-//        });
-//        clearDb.start();
     }
 
     private Integer _hitCountL = 0, _hitCountR = 0, _hitCountBag = 0;
     private Long _timeframeL = null, _timeframeR = null, _timeframeBag = null;
+    private enum EntityType { Glove, Bag };
+
+    private void insertAndTransfer(RoomEntity nodeData, EntityType type) {
+        switch (type) {
+            case Glove:
+                database.gloveDao().insert((Glove) nodeData);
+                break;
+            case Bag:
+                database.bagDao().insert((Bag) nodeData);
+                break;
+            default:
+                break;
+        }
+        LocalDatabaseService.transferAllDataToServer(MainActivity.this);
+    }
+
     private void initConnectedNodes() {
         final Observer<String> clientGlovesDataObserver = new Observer<String>() {
             @Override
@@ -127,10 +131,11 @@ public class MainActivity extends AppCompatActivity {
                         gl.x = DashboardFragment.lastAccelLeftToken.get_xL();
                         gl.y = DashboardFragment.lastAccelLeftToken.get_yL();
                         gl.z = DashboardFragment.lastAccelLeftToken.get_zL();
-                        database.gloveDao().insert(gl);
+                        insertAndTransfer(gl, EntityType.Glove);
                         if (_timeframeL == null)
                             _timeframeL = timestamp;
                         System.out.println("Hit Left! " + _hitCountL++);
+                        DashboardFragment.flashLGlove(MainActivity.this, getResources().getColor(R.color.flashL, getTheme()));
                     }
                     DashboardFragment.lastAccelLeftToken = token;
                 }
@@ -145,10 +150,11 @@ public class MainActivity extends AppCompatActivity {
                         gl.x = DashboardFragment.lastAccelRightToken.get_xR();
                         gl.y = DashboardFragment.lastAccelRightToken.get_yR();
                         gl.z = DashboardFragment.lastAccelRightToken.get_zR();
-                        database.gloveDao().insert(gl);
+                        insertAndTransfer(gl, EntityType.Glove);
                         if (_timeframeR == null)
                             _timeframeR = timestamp;
                         System.out.println("Hit Right!" + _hitCountR++);
+                        DashboardFragment.flashRGlove(MainActivity.this, getResources().getColor(R.color.flashR, getTheme()));
                     }
                     DashboardFragment.lastAccelRightToken = token;
                 }
@@ -193,10 +199,11 @@ public class MainActivity extends AppCompatActivity {
                         bag.y = DashboardFragment.lastAccelBagToken.get_y();
                         bag.z = DashboardFragment.lastAccelBagToken.get_z();
                         bag.temp = DashboardFragment.lastAccelBagToken.get_temp();
-                        database.bagDao().insert(bag);
+                        insertAndTransfer(bag, EntityType.Bag);
                         if (_timeframeBag == null)
                             _timeframeBag = timestamp;
                         System.out.println("Hit Bag! " + _hitCountBag++);
+                        DashboardFragment.flashBag(MainActivity.this, getResources().getColor(R.color.flashBag, getTheme()));
                     }
                     DashboardFragment.lastAccelBagToken = token;
                 }
@@ -225,13 +232,13 @@ public class MainActivity extends AppCompatActivity {
         _alertBuilder
                 .setTitle("Server IP address")
                 .setView(serverIPInput)
-                .setPositiveButton("PING", new DialogInterface.OnClickListener() {
+                .setPositiveButton("Ping", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Stub
+                        // Stub listener to prevent dialog from closing on button press
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton("Later", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
@@ -251,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
                         MainActivity.serverIP = serverIPInput.getText().toString();
                         Toast.makeText(MainActivity.this, "Connection established", Toast.LENGTH_LONG).show();
                         serverInitialized = true;
+                        LocalDatabaseService.transferAllDataToServer(MainActivity.this);
                         dialog.dismiss();
                     } else {
                         Toast.makeText(MainActivity.this, request.getResponse().getValue().toString(), Toast.LENGTH_LONG).show();
@@ -264,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
         };
         request.getResponse().observe(MainActivity.this, responseObserver);
 
+        // Finally specify dialog's positive button listener
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

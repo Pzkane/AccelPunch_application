@@ -33,6 +33,8 @@ public class HttpRequest implements Runnable {
     }
 
     public void execute() {
+        // Start thread on this object internally
+//        _response = new MutableLiveData<String>();
         _thread = new Thread( this );
         _thread.setPriority( Thread.NORM_PRIORITY );
         _thread.start();
@@ -40,6 +42,9 @@ public class HttpRequest implements Runnable {
 
     public void setUrl(String url) {
         _url = url.trim();
+    }
+    public void setPayload(String payload) {
+        _payload = payload;
     }
 
     @Override
@@ -77,16 +82,22 @@ public class HttpRequest implements Runnable {
             }
 
         } catch (ConnectException e) {
+            if (e.getMessage().contains("ENETUNREACH")) {
+                _response.postValue("Network is unreachable (" + _url + ")");
+            }
+            if (e.getMessage().contains("ECONNABORTED")) {
+                _response.postValue("Connection to "+ _url + " aborted");
+            }
             if (e.getMessage().contains("Failed to connect to")) {
                 _response.postValue("Failed to connect to " + _url);
             }
         } catch (UnknownHostException e) {
             if (e.getMessage().contains("Unable to resolve host")) {
-                _response.postValue("Unable to resolve host \"" + _url + "\"");
+                _response.postValue("Unable to resolve host " + _url);
             }
         } catch (SocketTimeoutException e) {
             if (e.getMessage().contains("failed to connect to")) {
-                _response.postValue("Failed to connect to \"" + _url + "\"");
+                _response.postValue("Failed to connect to " + _url);
             }
         } catch (Exception  e) {
             e.printStackTrace();
@@ -98,9 +109,5 @@ public class HttpRequest implements Runnable {
             _response = new MutableLiveData<String>();
         }
         return _response;
-    }
-
-    public void setPayload(String payload) {
-        _payload = payload;
     }
 }

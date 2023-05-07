@@ -2,7 +2,6 @@ package com.accelpunch.storage.service;
 
 import android.app.Activity;
 
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
@@ -21,38 +20,51 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 public class LocalDatabaseService {
+    static private final Integer _batchSize = 50;
+    static private List<Glove> gloveResultSet;
+    static private List<Bag> bagRecordResultSet;
+
     static public void transferAllDataToServer (Activity context) {
+        transferGloveDataToServer(context);
+        transferBagDataToServer(context);
+    }
+
+    static public void transferGloveDataToServer (Activity context) {
+        HttpRequest requestGloves = new HttpRequest(context, MainActivity.serverIP, MainActivity.serverPort.toString(), "POST", null);
         final Observer<String> responseObserver = new Observer<String>() {
             @Override
-            public void onChanged(@Nullable final String text) {
-                // Stub
+            public void onChanged(final String text) {
+                if ("Connected\n".equals(text)) {
+                    System.out.println("Response: " + text);
+                    System.out.println("Connection OK");
+                    MainActivity.database.gloveDao().delete(gloveResultSet);
+                }
             }
         };
-        HttpRequest requestGloves = new HttpRequest(context, MainActivity.serverIP, MainActivity.serverPort.toString(), "POST", null);
         requestGloves.getResponse().observe((LifecycleOwner) context, responseObserver);
         ListenableFuture<List<Glove>> futureGloves = MainActivity.database.gloveDao().getAll();
         futureGloves.addListener(new Runnable() {
             @Override
             public void run() {
                 try {
-                    List<Glove> result = futureGloves.get();
-//                  if (result.size() > 0)
-//                    MainActivity.database.gloveDao().purge();
+                    gloveResultSet = futureGloves.get();
+                    if (gloveResultSet.size() < _batchSize) return;
+                    System.out.println("Glove count on transfer after purge: " + gloveResultSet.size());
                     JSONObject payload = new JSONObject();
                     JSONArray gloves = new JSONArray();
-                    for (Glove glove : result) {
+                    for (Glove glove : gloveResultSet) {
                         gloves.put(new JSONObject(
                                 "{" +
-                                    "\"timestamp\":"+glove.time + "," +
-                                    "\"glove\":"+glove.glove + "," +
-                                    "\"x\":"+glove.x + "," +
-                                    "\"y\":"+glove.y + "," +
-                                    "\"z\":"+glove.z +
-                                "}"));
+                                        "\"timestamp\":"+glove.time + "," +
+                                        "\"glove\":"+glove.glove + "," +
+                                        "\"x\":"+glove.x + "," +
+                                        "\"y\":"+glove.y + "," +
+                                        "\"z\":"+glove.z +
+                                        "}"));
                     }
                     payload.put("gloves", gloves);
                     System.out.println(payload.toString());
-                    System.out.println(result.toArray().length);
+                    System.out.println(gloveResultSet.toArray().length);
                     requestGloves.setPayload(payload.toString());
                     requestGloves.execute();
                 } catch (ExecutionException | InterruptedException e) {
@@ -62,20 +74,32 @@ public class LocalDatabaseService {
                 }
             }
         }, Executors.newSingleThreadExecutor());
+    }
 
+    static public void transferBagDataToServer (Activity context) {
         HttpRequest requestBag = new HttpRequest(context, MainActivity.serverIP, MainActivity.serverPort.toString(), "POST", null);
+        final Observer<String> responseObserver = new Observer<String>() {
+            @Override
+            public void onChanged(final String text) {
+                if ("Connected\n".equals(text)) {
+                    System.out.println("Response: " + text);
+                    System.out.println("Connection OK");
+                    MainActivity.database.bagDao().delete(bagRecordResultSet);
+                }
+            }
+        };
         requestBag.getResponse().observe((LifecycleOwner) context, responseObserver);
         ListenableFuture<List<Bag>> futureBag = MainActivity.database.bagDao().getAll();
         futureBag.addListener(new Runnable() {
             @Override
             public void run() {
                 try {
-                    List<Bag> result = futureBag.get();
-//                  if (result.size() > 0)
-//                    MainActivity.database.bagDao().purge();
+                    bagRecordResultSet = futureBag.get();
+                    if (bagRecordResultSet.size() < _batchSize) return;
+                    System.out.println("Bag record count on transfer after purge: " + bagRecordResultSet.size());
                     JSONObject payload = new JSONObject();
                     JSONArray bagRecords = new JSONArray();
-                    for (Bag bag : result) {
+                    for (Bag bag : bagRecordResultSet) {
                         bagRecords.put(new JSONObject(
                                 "{" +
                                         "\"timestamp\":"+bag.time + "," +
@@ -87,7 +111,7 @@ public class LocalDatabaseService {
                     }
                     payload.put("bag", bagRecords);
                     System.out.println(payload.toString());
-                    System.out.println(result.toArray().length);
+                    System.out.println(bagRecordResultSet.toArray().length);
                     requestBag.setPayload(payload.toString());
                     requestBag.execute();
                 } catch (ExecutionException | InterruptedException e) {

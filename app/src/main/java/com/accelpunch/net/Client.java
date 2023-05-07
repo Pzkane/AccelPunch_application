@@ -12,40 +12,49 @@ import java.net.Socket;
 
 public class Client implements Runnable
 {
-    private Thread thread;
-    private Socket socket;
-    private String host;
-    private Integer port;
-    private BufferedReader dataInputStream;
-    private DataOutputStream dataOutputStream;
+    private Thread _thread;
+    private Socket _socket;
+    private String _host;
+    private Integer _port;
+    private BufferedReader _dataInputStream;
+    private DataOutputStream _dataOutputStream;
 
-    private MutableLiveData<String> data;
+    private MutableLiveData<String> _data;
 
     public Client(String host, Integer port)
     {
-        this.host = host;
-        this.port = port;
-        this.thread = new Thread( this );
-        this.thread.setPriority( Thread.NORM_PRIORITY );
-        this.thread.start();
+        this._host = host;
+        this._port = port;
+        this._thread = new Thread( this );
+        this._thread.setPriority( Thread.NORM_PRIORITY );
+        this._thread.start();
     }
 
     private void connect() {
         boolean connected = false;
         do {
             // Wait for a connection
-            System.out.println( "[Client -> NodeMCU] waiting for connection on host " + host + ":" + port.toString() + "..." );
+            System.out.println( "[Client -> NodeMCU] waiting for connection on host " + _host + ":" + _port.toString() + "..." );
             try {
-                this.socket = new Socket(host, port);
+                this._socket = new Socket(_host, _port);
                 connected = true;
             } catch (ConnectException e) {
                 if (e.getMessage().contains("ETIMEDOUT")) {
                     System.out.println("[Client] " + e.getMessage());
-                } else if (e.getMessage().contains("ECONNREFUSED")) {
+                }
+                if (e.getMessage().contains("ECONNREFUSED")) {
                     System.out.println("[Client] " + e.getMessage());
                     System.out.println("[Client] Check if NodeMCU server is started");
-                } else {
-                    e.printStackTrace();
+                }
+                if (e.getMessage().contains("ENETUNREACH")) {
+                    System.out.println("[Client -> NodeMCU] Network is unreachable (" + _host + ")");
+
+                }
+                if (e.getMessage().contains("ECONNABORTED")) {
+                    System.out.println("[Client -> NodeMCU] Connection to "+ _host + " aborted");
+                }
+                if (e.getMessage().contains("Failed to connect to")) {
+                    System.out.println("[Client -> NodeMCU] Failed to connect to " + _host);
                 }
                 try {
                     Thread.sleep(5000);
@@ -62,14 +71,15 @@ public class Client implements Runnable
     @Override
     public void run()
     {
+        // Continuously wait for connection with nodes
         do {
             connect();
             System.out.println("[Client -> NodeMCU] client connected");
 
             // create input and output streams
             try {
-                this.dataInputStream = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-                this.dataOutputStream = new DataOutputStream(new BufferedOutputStream(this.socket.getOutputStream()));
+                this._dataInputStream = new BufferedReader(new InputStreamReader(this._socket.getInputStream()));
+                this._dataOutputStream = new DataOutputStream(new BufferedOutputStream(this._socket.getOutputStream()));
             } catch (IOException e) {
                 System.out.println("[Client -> NodeMCU] failed to create streams");
                 e.printStackTrace();
@@ -77,33 +87,32 @@ public class Client implements Runnable
 
             // send some test data
             try {
-                this.dataOutputStream.writeChars("Hello from Android");
-                this.dataOutputStream.flush();
+                this._dataOutputStream.writeChars("Hello from Android");
+                this._dataOutputStream.flush();
             } catch (IOException e) {
                 System.out.println("[Client -> NodeMCU] failed to send");
                 e.printStackTrace();
             }
 
-            // placeholder recv loop
+            // Only listen to node updates
             while (true) {
                 try {
-                    String test = this.dataInputStream.readLine();
-//                System.out.println("bytes read: " + "\"" + test + "\"");
-                    this.data.postValue(test);
-                    if (test == null) break;
+                    String dataIn = this._dataInputStream.readLine();
+                    this._data.postValue(dataIn);
+                    if (dataIn == null) break;
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
             }
             System.out.println("[Client -> NodeMCU] server thread stopped");
-        }while(true);
+        } while(true);
     }
 
     public MutableLiveData<String> getData() {
-        if (data == null) {
-            data = new MutableLiveData<String>();
+        if (_data == null) {
+            _data = new MutableLiveData<String>();
         }
-        return data;
+        return _data;
     }
 }

@@ -1,6 +1,7 @@
 package com.accelpunch.storage.room;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
@@ -19,4 +20,7 @@ public interface GloveDao {
 
     @Query("DELETE FROM glove")
     public ListenableFuture<Integer> purge();
+
+    @Delete
+    public ListenableFuture<Integer> delete(List<Glove> gloves);
 }

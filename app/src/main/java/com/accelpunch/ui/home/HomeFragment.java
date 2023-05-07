@@ -22,28 +22,28 @@ import com.accelpunch.storage.service.LocalDatabaseService;
 
 public class HomeFragment extends Fragment {
 
-    private FragmentHomeBinding binding;
-    private Button pingBtn, updateServerIp;
-    private TextView outputBox;
-    HomeViewModel homeViewModel;
+    private FragmentHomeBinding _binding;
+    private Button _pingBtn, _updateServerIp;
+    private TextView _outputBox;
+    private HomeViewModel _homeViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        _homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        _binding = FragmentHomeBinding.inflate(inflater, container, false);
+        View root = _binding.getRoot();
 
-        final TextView textViewGloves = binding.textGloves, textViewBag = binding.textBag;
-        homeViewModel.getGlovesText().observe(getViewLifecycleOwner(), textViewGloves::setText);
-        homeViewModel.getBagText().observe(getViewLifecycleOwner(), textViewBag::setText);
+        final TextView textViewGloves = _binding.textGloves, textViewBag = _binding.textBag;
+        _homeViewModel.getGlovesText().observe(getViewLifecycleOwner(), textViewGloves::setText);
+        _homeViewModel.getBagText().observe(getViewLifecycleOwner(), textViewBag::setText);
 
-        pingBtn = root.findViewById(R.id.ipBtn);
-        updateServerIp = root.findViewById(R.id.serverIpBtn);
-        outputBox = root.findViewById(R.id.ipOutput);
+        _pingBtn = root.findViewById(R.id.ipBtn);
+        _updateServerIp = root.findViewById(R.id.serverIpBtn);
+        _outputBox = root.findViewById(R.id.ipOutput);
 
-        pingBtn.setOnClickListener(getToServer);
-        updateServerIp.setOnClickListener(refreshAPs);
+        _pingBtn.setOnClickListener(getToServer);
+        _updateServerIp.setOnClickListener(refreshAPs);
 
         return root;
     }
@@ -51,7 +51,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        _binding = null;
     }
 
     private View.OnClickListener refreshAPs = new View.OnClickListener() {
@@ -73,12 +73,12 @@ public class HomeFragment extends Fragment {
             final Observer<String> responseObserver = new Observer<String>() {
                 @Override
                 public void onChanged(@Nullable final String text) {
-                    outputBox.setText(request.getResponse().getValue().toString());
+                    _outputBox.setText(request.getResponse().getValue().toString());
+                    LocalDatabaseService.transferAllDataToServer(getActivity());
                 }
             };
             request.getResponse().observe(getActivity(), responseObserver);
             request.execute();
-            LocalDatabaseService.transferAllDataToServer(getActivity());
         }
     };
 }

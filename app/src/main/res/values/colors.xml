@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#EE4540</color>
-    <color name="purple_500">#c72c41</color>
-    <color name="purple_700">#801336</color>
-    <color name="teal_200">#510a32</color>
-    <color name="teal_700">#2d142c</color>
+    <color name="scheme_1">#EE4540</color>
+    <color name="scheme_2">#c72c41</color>
+    <color name="scheme_3">#801336</color>
+    <color name="scheme_4">#510a32</color>
+    <color name="scheme_5">#2d142c</color>
+
+    <color name="flashL">#397094</color>
+    <color name="flashR">#c72c41</color>
+    <color name="flashBag">#249C4E</color>
+
+
+    <color name="bgL">#192832</color>
+    <color name="bgR">#321919</color>
+    <color name="bag">#193222</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

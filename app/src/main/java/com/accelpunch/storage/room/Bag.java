@@ -5,7 +5,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class Bag {
+public class Bag extends RoomEntity {
     @PrimaryKey
     @ColumnInfo(name = "timestamp")
     public long time;

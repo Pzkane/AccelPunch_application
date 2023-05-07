@@ -1,15 +1,21 @@
 package com.accelpunch.ui.dashboard;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.accelpunch.R;
 import com.accelpunch.databinding.FragmentDashboardBinding;
 import com.accelpunch.parser.BagToken;
 import com.accelpunch.parser.GloveToken;
@@ -18,8 +24,13 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class DashboardFragment extends Fragment {
-    private FragmentDashboardBinding binding;
-    private GraphView accelLGraphView, accelRGraphView, accelRBagGraphView;
+    private FragmentDashboardBinding _binding;
+    private GraphView _accelLGraphView;
+    private static GraphView _accelRGraphView;
+    private GraphView _accelRBagGraphView;
+    private static LinearLayout _layoutGloveLeft, _layoutGloveRight, _layoutPunchBag;
+    private static TextView _txtGloveLeft, _txtGloveRight, _txtPunchBag;
+
     static public LineGraphSeries<DataPoint> seriesL, seriesR, seriesBag;
 
     static public GloveToken lastAccelLeftToken;
@@ -31,15 +42,18 @@ public class DashboardFragment extends Fragment {
         DashboardViewModel dashboardViewModel =
                 new ViewModelProvider(this).get(DashboardViewModel.class);
 
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        _binding = FragmentDashboardBinding.inflate(inflater, container, false);
+        View root = _binding.getRoot();
 
-        final TextView textView = binding.textDashboard;
-        dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-
-        accelLGraphView = binding.idGraphViewL;
-        accelRGraphView = binding.idGraphViewR;
-        accelRBagGraphView = binding.idGraphViewBag;
+        _accelLGraphView = _binding.idGraphViewL;
+        _accelRGraphView = _binding.idGraphViewR;
+        _accelRBagGraphView = _binding.idGraphViewBag;
+        _layoutGloveLeft = _binding.layoutGloveLeft;
+        _layoutGloveRight = _binding.layoutGloveRight;
+        _layoutPunchBag = _binding.layoutPunchBag;
+        _txtGloveLeft = _binding.txtGloveLeft;
+        _txtGloveRight = _binding.txtGloveLeft;
+        _txtPunchBag = _binding.txtPunchBag;
 
         // on below line we are adding data to our graph view.
         seriesL = new LineGraphSeries<DataPoint>();
@@ -48,37 +62,37 @@ public class DashboardFragment extends Fragment {
 
         // on below line we are setting
         // our title text size.
-        accelLGraphView.setTitleTextSize(40);
-        accelRGraphView.setTitleTextSize(40);
-        accelRBagGraphView.setTitleTextSize(40);
+        _accelLGraphView.setTitleTextSize(40);
+        _accelRGraphView.setTitleTextSize(40);
+        _accelRBagGraphView.setTitleTextSize(40);
 
         // on below line we are adding
         // data series to our graph view.
-        accelLGraphView.addSeries(seriesL);
-        accelRGraphView.addSeries(seriesR);
-        accelRBagGraphView.addSeries(seriesBag);
+        _accelLGraphView.addSeries(seriesL);
+        _accelRGraphView.addSeries(seriesR);
+        _accelRBagGraphView.addSeries(seriesBag);
 
-        accelLGraphView.getViewport().setYAxisBoundsManual(true);
-        accelRGraphView.getViewport().setYAxisBoundsManual(true);
-        accelRBagGraphView.getViewport().setYAxisBoundsManual(true);
+        _accelLGraphView.getViewport().setYAxisBoundsManual(true);
+        _accelRGraphView.getViewport().setYAxisBoundsManual(true);
+        _accelRBagGraphView.getViewport().setYAxisBoundsManual(true);
 
-        accelLGraphView.getViewport().setMaxX(10);
-        accelLGraphView.getViewport().setMaxY(16000);
-        accelLGraphView.getViewport().setMinX(0);
-        accelLGraphView.getViewport().setMinY(-5000);
-        accelLGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+        _accelLGraphView.getViewport().setMaxX(10);
+        _accelLGraphView.getViewport().setMaxY(16000);
+        _accelLGraphView.getViewport().setMinX(0);
+        _accelLGraphView.getViewport().setMinY(-5000);
+        _accelLGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
 
-        accelRGraphView.getViewport().setMaxX(10);
-        accelRGraphView.getViewport().setMaxY(16000);
-        accelRGraphView.getViewport().setMinX(0);
-        accelRGraphView.getViewport().setMinY(-5000);
-        accelRGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+        _accelRGraphView.getViewport().setMaxX(10);
+        _accelRGraphView.getViewport().setMaxY(16000);
+        _accelRGraphView.getViewport().setMinX(0);
+        _accelRGraphView.getViewport().setMinY(-5000);
+        _accelRGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
 
-        accelRBagGraphView.getViewport().setMaxX(10);
-        accelRBagGraphView.getViewport().setMaxY(16000);
-        accelRBagGraphView.getViewport().setMinX(0);
-        accelRBagGraphView.getViewport().setMinY(-16000);
-        accelRBagGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+        _accelRBagGraphView.getViewport().setMaxX(10);
+        _accelRBagGraphView.getViewport().setMaxY(16000);
+        _accelRBagGraphView.getViewport().setMinX(0);
+        _accelRBagGraphView.getViewport().setMinY(-16000);
+        _accelRBagGraphView.getGridLabelRenderer().setHorizontalLabelsVisible(false);
 
         return root;
     }
@@ -86,6 +100,42 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding = null;
+        _binding = null;
+    }
+
+    static public void setLGloveText(String text) {
+        _txtGloveLeft.setText(text);
+    }
+
+    static public void setRGloveText(String text) {
+        _txtGloveRight.setText(text);
+    }
+
+    static public void setBagText(String text) {
+        _txtPunchBag.setText(text);
+    }
+
+    static public void flashLGlove(Activity context, @ColorInt int color) {
+        ObjectAnimator anim = ObjectAnimator.ofInt(_layoutGloveLeft, "backgroundColor",
+                color, context.getResources().getColor(R.color.bgL, context.getTheme()));
+        anim.setDuration(250);
+        anim.setEvaluator(new ArgbEvaluator());
+        anim.start();
+    }
+
+    static public void flashRGlove(Activity context, @ColorInt int color) {
+        ObjectAnimator anim = ObjectAnimator.ofInt(_layoutGloveRight, "backgroundColor",
+                color, context.getResources().getColor(R.color.bgR, context.getTheme()));
+        anim.setDuration(250);
+        anim.setEvaluator(new ArgbEvaluator());
+        anim.start();
+    }
+
+    static public void flashBag(Activity context, @ColorInt int color) {
+        ObjectAnimator anim = ObjectAnimator.ofInt(_layoutPunchBag, "backgroundColor",
+                color, context.getResources().getColor(R.color.bag, context.getTheme()));
+        anim.setDuration(250);
+        anim.setEvaluator(new ArgbEvaluator());
+        anim.start();
     }
 }
