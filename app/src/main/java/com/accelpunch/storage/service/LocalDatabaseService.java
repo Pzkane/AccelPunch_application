@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 public class LocalDatabaseService {
-    static private final Integer _batchSize = 50;
+    static private final Integer _batchSize = 30;
     static private List<Glove> gloveResultSet;
     static private List<Bag> bagRecordResultSet;
 

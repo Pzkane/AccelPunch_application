@@ -181,13 +181,13 @@ public class MainActivity extends AppCompatActivity {
                 TextView homeText = findViewById(R.id.textBag);
                 GraphView dashGraphBag = findViewById(R.id.idGraphViewBag);
 
-                final Integer delay = 500; // delay in ms between hits on bag
-                final Integer hitBaseline = 6000; // Tweak this for database access
-                final Integer accelBag = token.get_x() + token.get_y() + token.get_z();
+                final Integer delay = 1000; // delay in ms between hits on a bag
+                final Integer hitBaseline = 1350; // Tweak this for database access
+                final Integer accelBag = Math.abs(token.get_x() + token.get_y());
                 Integer accelBagPrev = DashboardFragment.lastAccelBagToken != null
-                        ? DashboardFragment.lastAccelBagToken.get_x()
+                        ? Math.abs(DashboardFragment.lastAccelBagToken.get_x()
                         + DashboardFragment.lastAccelBagToken.get_y()
-                        + DashboardFragment.lastAccelBagToken.get_z()
+                        )
                         : 0;
                 final Long timestamp = System.currentTimeMillis();
 
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 if (homeText != null)
                     homeText.setText(text);
                 if (dashGraphBag != null) {
-                    DashboardFragment.seriesBag.appendData(new DataPoint(new Date(),token.get_x() + token.get_y() + token.get_z()), true, 60);
+                    DashboardFragment.seriesBag.appendData(new DataPoint(new Date(),Math.abs(token.get_x() + token.get_y())), true, 60);
                     dashGraphBag.onDataChanged(false, true);
                 }
             }
