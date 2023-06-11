@@ -11,7 +11,7 @@ To establish connection with server, specify local/external network IP in text i
 
 ## Usage notes
 
-Usually hotspot and local Wi-Fi don't work simultaneously because of hardware limitations. Because of that application saves your performance in batches in persisting storage and _[TODO: does that until connection with server is established]_. So after each boxing session you can disconnect from nodes by connecting to the server to send the readings and then reconnect again by enabling hotspot - connections with nodes will be established automatically.
+Usually hotspot and local Wi-Fi don't work simultaneously because of hardware limitations. Because of that application saves your performance in batches in persisting storage and does that until connection with server is established. So after each boxing session you can disconnect from nodes by connecting to the server to send the readings and then reconnect again by enabling hotspot - connections with nodes will be established automatically.
 
 Or host servlet publicly.
 
