@@ -34,10 +34,16 @@ public class LocalDatabaseService {
         final Observer<String> responseObserver = new Observer<String>() {
             @Override
             public void onChanged(final String text) {
-                if ("Connected\n".equals(text)) {
-                    System.out.println("Response: " + text);
-                    System.out.println("Connection OK");
-                    MainActivity.database.gloveDao().delete(gloveResultSet);
+                try {
+                    if ("".equals(text)) return;
+                    JSONObject response = new JSONObject(text);
+                    if (response.getInt("status") == 200) {
+                        System.out.println("Response: " + text);
+                        System.out.println("Connection OK");
+                        MainActivity.database.gloveDao().delete(gloveResultSet);
+                    }
+                } catch (JSONException e) {
+                    System.out.println("Error while creating JSON object response for glove dataset transfer");
                 }
             }
         };
@@ -81,10 +87,16 @@ public class LocalDatabaseService {
         final Observer<String> responseObserver = new Observer<String>() {
             @Override
             public void onChanged(final String text) {
-                if ("Connected\n".equals(text)) {
-                    System.out.println("Response: " + text);
-                    System.out.println("Connection OK");
-                    MainActivity.database.bagDao().delete(bagRecordResultSet);
+                try {
+                    if ("".equals(text)) return;
+                    JSONObject response = new JSONObject(text);
+                    if (response.getInt("status") == 200) {
+                        System.out.println("Response: " + text);
+                        System.out.println("Connection OK");
+                        MainActivity.database.bagDao().delete(bagRecordResultSet);
+                    }
+                } catch (JSONException e) {
+                    System.out.println("Error while creating JSON object response for bag dataset transfer");
                 }
             }
         };

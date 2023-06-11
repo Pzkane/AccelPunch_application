@@ -23,15 +23,15 @@
 
                 <TextView
                     android:id="@+id/ipOutput"
-                    android:layout_width="287dp"
-                    android:layout_height="51dp"
-                    android:gravity="center"
-                    android:text="empty"
+                    android:layout_width="360dp"
+                    android:layout_height="445dp"
+                    android:gravity="left"
+                    android:scrollbars="vertical"
+                    android:text="Specify IP address..."
                     android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    tools:layout_editor_absoluteY="37dp" />
 
                 <Button
                     android:id="@+id/ipBtn"
@@ -40,6 +40,7 @@
                     android:text="Ping"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@+id/ipOutput"
+                    app:layout_constraintStart_toStartOf="@+id/ipOutput"
                     app:layout_constraintTop_toBottomOf="@+id/ipOutput" />
 
                 <Button
@@ -48,6 +49,7 @@
                     android:layout_height="wrap_content"
                     android:text="Set IP"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/ipBtn"
                     app:layout_constraintStart_toStartOf="@+id/ipOutput"
                     app:layout_constraintTop_toBottomOf="@+id/ipOutput" />
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -79,8 +81,8 @@
                     android:textSize="20sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.183"
-                    tools:layout_editor_absoluteX="16dp" />
+                    app:layout_constraintVertical_bias="0.505"
+                    tools:layout_editor_absoluteX="0dp" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>

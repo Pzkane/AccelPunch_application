@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding _binding;
     private AlertDialog.Builder _alertBuilder;
     static public Client clientGloves = null, clientBag = null;
+
+    // Static node IPs
     static public String glovesIp = "192.168.43.2", bagIp = "192.168.43.3";
     static public Integer glovesPort = 8266, bagPort = 8267;
     static public String serverIP;
@@ -106,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 GraphView dashGraphR = findViewById(R.id.idGraphViewR);
 
                 final Integer delay = 500; // delay in ms between punches
-                final Integer punchBaseline = 6000; // Tweak this for database access
+                final Integer punchBaseline = 5000; // Tweak this for database access
                 final Integer accelLeft = token.get_xL() + token.get_yL() + token.get_zL();
                 final Integer accelRight = token.get_xR() + token.get_yR() + token.get_zR();
                 Integer accelLeftPrev = DashboardFragment.lastAccelLeftToken != null
@@ -203,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                         if (_timeframeBag == null)
                             _timeframeBag = timestamp;
                         System.out.println("Hit Bag! " + _hitCountBag++);
-                        DashboardFragment.flashBag(MainActivity.this, getResources().getColor(R.color.flashBag, getTheme()));
+                        DashboardFragment.flashBag(MainActivity.this, getResources().getColor(R.color.flashBag, getTheme()), false);
                     }
                     DashboardFragment.lastAccelBagToken = token;
                 }
