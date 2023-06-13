@@ -29,6 +29,7 @@
                     android:scrollbars="vertical"
                     android:text="Specify IP address..."
                     android:textSize="20sp"
+                    android:linksClickable="true"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     tools:layout_editor_absoluteY="37dp" />

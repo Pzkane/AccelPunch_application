@@ -2,7 +2,7 @@ package com.accelpunch.ui.home;
 
 import android.os.Bundle;
 import android.text.Html;
-import android.text.method.ScrollingMovementMethod;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +46,7 @@ public class HomeFragment extends Fragment {
         _pingBtn = root.findViewById(R.id.ipBtn);
         _updateServerIp = root.findViewById(R.id.serverIpBtn);
         _outputBox = root.findViewById(R.id.ipOutput);
-        _outputBox.setMovementMethod(new ScrollingMovementMethod());
+        _outputBox.setMovementMethod(LinkMovementMethod.getInstance());
 
         _pingBtn.setOnClickListener(getToServer);
         _updateServerIp.setOnClickListener(refreshAPs);
@@ -88,26 +88,26 @@ public class HomeFragment extends Fragment {
                     stringBuilder.append("<ul>");
 
                     // Strongest hands
-                    if (!"0".equals(stats.getJSONObject("strongest_left").getString("x"))) {
-                        System.out.println(stats.getJSONObject("strongest_left").getString("x"));
+                    if (!"0".equals(stats.getJSONObject("force_max_left").getString("x"))) {
+                        System.out.println(stats.getJSONObject("force_max_left").getString("x"));
                         stringBuilder.append("<li>strongest Left punch was on ");
                         stringBuilder.append(BLUE_COLOR_OPEN);
-                        stringBuilder.append(stats.getJSONObject("strongest_left").getString("x"));
+                        stringBuilder.append(stats.getJSONObject("force_max_left").getString("x"));
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with force of ");
                         stringBuilder.append(GREEN_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(stats.getJSONObject("strongest_left").getDouble("y") / 1000) + "g</li>");
+                        stringBuilder.append(Double.toString(stats.getJSONObject("force_max_left").getDouble("y") / 1000) + "g</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
-                    if (!"0".equals(stats.getJSONObject("strongest_right").getString("x"))) {
+                    if (!"0".equals(stats.getJSONObject("force_max_right").getString("x"))) {
                         stringBuilder.append("<li>strongest Right punch was on ");
                         stringBuilder.append(BLUE_COLOR_OPEN);
-                        stringBuilder.append(stats.getJSONObject("strongest_right").getString("x"));
+                        stringBuilder.append(stats.getJSONObject("force_max_right").getString("x"));
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with force of ");
                         stringBuilder.append(GREEN_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(stats.getJSONObject("strongest_right").getDouble("y") / 1000) + "g</li>");
+                        stringBuilder.append(Double.toString(stats.getJSONObject("force_max_right").getDouble("y") / 1000) + "g</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -119,7 +119,7 @@ public class HomeFragment extends Fragment {
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with speed of ");
                         stringBuilder.append(RED_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(Math.round(stats.getJSONObject("fastest_left").getDouble("speed_mps") * 100.0) / 100.0) + "m/s</li>");
+                        stringBuilder.append(Double.toString(Math.round(stats.getJSONObject("fastest_left").getDouble("speed_ms") * 100.0) / 100.0) + "ms</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -130,7 +130,7 @@ public class HomeFragment extends Fragment {
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with speed of ");
                         stringBuilder.append(RED_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(Math.round(stats.getJSONObject("fastest_right").getDouble("speed_mps") * 100.0) / 100.0) + "m/s</li>");
+                        stringBuilder.append(Double.toString(Math.round(stats.getJSONObject("fastest_right").getDouble("speed_ms") * 100.0) / 100.0) + "ms</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -149,25 +149,25 @@ public class HomeFragment extends Fragment {
                     // Shadowboxing
                     stringBuilder.append("<li><h6>Shadowboxing:</h6><ul>\n");
                     // Strongest hands
-                    if (!"0".equals(shadowStats.getJSONObject("strongest_left").getString("x"))) {
+                    if (!"0".equals(shadowStats.getJSONObject("force_max_left").getString("x"))) {
                         stringBuilder.append("<li>strongest Left punch was on ");
                         stringBuilder.append(BLUE_COLOR_OPEN);
-                        stringBuilder.append(shadowStats.getJSONObject("strongest_left").getString("x"));
+                        stringBuilder.append(shadowStats.getJSONObject("force_max_left").getString("x"));
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with force of ");
                         stringBuilder.append(GREEN_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(shadowStats.getJSONObject("strongest_left").getDouble("y") / 1000) + "g</li>");
+                        stringBuilder.append(Double.toString(shadowStats.getJSONObject("force_max_left").getDouble("y") / 1000) + "g</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
-                    if (!"0".equals(shadowStats.getJSONObject("strongest_right").getString("x"))) {
+                    if (!"0".equals(shadowStats.getJSONObject("force_max_right").getString("x"))) {
                         stringBuilder.append("<li>strongest Right punch was on ");
                         stringBuilder.append(BLUE_COLOR_OPEN);
-                        stringBuilder.append(shadowStats.getJSONObject("strongest_right").getString("x"));
+                        stringBuilder.append(shadowStats.getJSONObject("force_max_right").getString("x"));
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with force of ");
                         stringBuilder.append(GREEN_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(shadowStats.getJSONObject("strongest_right").getDouble("y") / 1000) + "g</li>");
+                        stringBuilder.append(Double.toString(shadowStats.getJSONObject("force_max_right").getDouble("y") / 1000) + "g</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -179,7 +179,7 @@ public class HomeFragment extends Fragment {
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with speed of ");
                         stringBuilder.append(RED_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(Math.round(shadowStats.getJSONObject("fastest_left").getDouble("speed_mps") * 100.0) / 100.0) + "m/s</li>");
+                        stringBuilder.append(Double.toString(Math.round(shadowStats.getJSONObject("fastest_left").getDouble("speed_ms") * 100.0) / 100.0) + "ms</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -190,7 +190,7 @@ public class HomeFragment extends Fragment {
                         stringBuilder.append(COLOR_CLOSE);
                         stringBuilder.append(" with speed of ");
                         stringBuilder.append(RED_COLOR_OPEN);
-                        stringBuilder.append(Double.toString(Math.round(shadowStats.getJSONObject("fastest_right").getDouble("speed_mps") * 100.0) / 100.0) + "m/s</li>");
+                        stringBuilder.append(Double.toString(Math.round(shadowStats.getJSONObject("fastest_right").getDouble("speed_ms") * 100.0) / 100.0) + "ms</li>");
                         stringBuilder.append(COLOR_CLOSE);
                     }
 
@@ -199,6 +199,7 @@ public class HomeFragment extends Fragment {
                 }
                 @Override
                 public void onChanged(final String text) {
+                    StringBuilder stringBuilder = new StringBuilder();
                     try {
                         if ("".equals(text)) return;
                         JSONObject response = new JSONObject(text);
@@ -209,7 +210,6 @@ public class HomeFragment extends Fragment {
                             JSONObject overallStats = stats.getJSONObject("overall");
                             JSONObject overallStatsShadow = overallStats.getJSONObject("shadow");
                             System.out.println(stats.toString(4));
-                            StringBuilder stringBuilder = new StringBuilder();
                             stringBuilder.append("<h4>Your Stats:<h4>");
                             StringBuilder recentStats = parseStats("Last hour", hourStats, hourStatsShadow);
                             StringBuilder generalStats = parseStats("Overall", overallStats, overallStatsShadow);
@@ -227,12 +227,15 @@ public class HomeFragment extends Fragment {
                             }
 
                             System.out.println(stringBuilder);
-                            _outputBox.setText(Html.fromHtml(stringBuilder.toString(), HtmlCompat.FROM_HTML_MODE_LEGACY));
                             LocalDatabaseService.transferAllDataToServer(getActivity());
                         }
                     } catch (JSONException e) {
 //                        throw new RuntimeException(e);
                         System.out.println("Error while creating JSON object response for ping request");
+                    } finally {
+                        stringBuilder.append("<h6><a href=\"http://" + MainActivity.serverIP + ":" + MainActivity.serverPort + "/gloves_hour\">Recent performance graph</a></h6>");
+                        stringBuilder.append("<h6><a href=\"http://" + MainActivity.serverIP + ":" + MainActivity.serverPort + "/gloves\">Overall performance graph</a></h6>");
+                        _outputBox.setText(Html.fromHtml(stringBuilder.toString(), HtmlCompat.FROM_HTML_MODE_LEGACY));
                     }
                 }
             };

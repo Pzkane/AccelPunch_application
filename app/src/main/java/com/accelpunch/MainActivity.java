@@ -107,21 +107,21 @@ public class MainActivity extends AppCompatActivity {
                 GraphView dashGraphL = findViewById(R.id.idGraphViewL);
                 GraphView dashGraphR = findViewById(R.id.idGraphViewR);
 
-                final Integer delay = 500; // delay in ms between punches
-                final Integer punchBaseline = 5000; // Tweak this for database access
-                final Integer accelLeft = token.get_xL() + token.get_yL() + token.get_zL();
-                final Integer accelRight = token.get_xR() + token.get_yR() + token.get_zR();
+                final Integer delay = 300; // delay in ms between punches
+                final Integer punchBaseline = 4000; // Tweak this for database access
+                final Integer accelLeft = Math.abs(token.get_xL() + token.get_yL() + token.get_zL());
+                final Integer accelRight = Math.abs(token.get_xR() + token.get_yR() + token.get_zR());
                 Integer accelLeftPrev = DashboardFragment.lastAccelLeftToken != null
-                        ? DashboardFragment.lastAccelLeftToken.get_xL()
+                        ? Math.abs(DashboardFragment.lastAccelLeftToken.get_xL()
                             + DashboardFragment.lastAccelLeftToken.get_yL()
-                            + DashboardFragment.lastAccelLeftToken.get_zL()
+                            + DashboardFragment.lastAccelLeftToken.get_zL())
                         : 0;
                 Integer accelRightPrev = DashboardFragment.lastAccelRightToken != null
-                        ? DashboardFragment.lastAccelRightToken.get_xR()
+                        ? Math.abs(DashboardFragment.lastAccelRightToken.get_xR()
                             + DashboardFragment.lastAccelRightToken.get_yR()
-                            + DashboardFragment.lastAccelRightToken.get_zR()
+                            + DashboardFragment.lastAccelRightToken.get_zR())
                         : 0;
-                final Long timestamp = System.currentTimeMillis();
+                Long timestamp = System.currentTimeMillis();
 
                 if (accelLeft >= punchBaseline && accelLeft > accelLeftPrev) {
                     DashboardFragment.lastAccelLeftToken = token;
@@ -134,8 +134,7 @@ public class MainActivity extends AppCompatActivity {
                         gl.y = DashboardFragment.lastAccelLeftToken.get_yL();
                         gl.z = DashboardFragment.lastAccelLeftToken.get_zL();
                         insertAndTransfer(gl, EntityType.Glove);
-                        if (_timeframeL == null)
-                            _timeframeL = timestamp;
+                        _timeframeL = timestamp;
                         System.out.println("Hit Left! " + _hitCountL++);
                         DashboardFragment.flashLGlove(MainActivity.this, getResources().getColor(R.color.flashL, getTheme()));
                     }
@@ -153,8 +152,7 @@ public class MainActivity extends AppCompatActivity {
                         gl.y = DashboardFragment.lastAccelRightToken.get_yR();
                         gl.z = DashboardFragment.lastAccelRightToken.get_zR();
                         insertAndTransfer(gl, EntityType.Glove);
-                        if (_timeframeR == null)
-                            _timeframeR = timestamp;
+                        _timeframeR = timestamp;
                         System.out.println("Hit Right!" + _hitCountR++);
                         DashboardFragment.flashRGlove(MainActivity.this, getResources().getColor(R.color.flashR, getTheme()));
                     }
@@ -181,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
                 TextView homeText = findViewById(R.id.textBag);
                 GraphView dashGraphBag = findViewById(R.id.idGraphViewBag);
 
-                final Integer delay = 1000; // delay in ms between hits on a bag
-                final Integer hitBaseline = 1350; // Tweak this for database access
+                final Integer delay = 400; // delay in ms between hits on a bag
+                final Integer hitBaseline = 1400; // Tweak this for database access
                 final Integer accelBag = Math.abs(token.get_x() + token.get_y());
                 Integer accelBagPrev = DashboardFragment.lastAccelBagToken != null
                         ? Math.abs(DashboardFragment.lastAccelBagToken.get_x()
@@ -202,8 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         bag.z = DashboardFragment.lastAccelBagToken.get_z();
                         bag.temp = DashboardFragment.lastAccelBagToken.get_temp();
                         insertAndTransfer(bag, EntityType.Bag);
-                        if (_timeframeBag == null)
-                            _timeframeBag = timestamp;
+                        _timeframeBag = timestamp;
                         System.out.println("Hit Bag! " + _hitCountBag++);
                         DashboardFragment.flashBag(MainActivity.this, getResources().getColor(R.color.flashBag, getTheme()), false);
                     }
