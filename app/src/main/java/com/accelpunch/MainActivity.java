@@ -133,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
                         gl.x = DashboardFragment.lastAccelLeftToken.get_xL();
                         gl.y = DashboardFragment.lastAccelLeftToken.get_yL();
                         gl.z = DashboardFragment.lastAccelLeftToken.get_zL();
+                        gl.roll = DashboardFragment.lastAccelLeftToken.getRollL();
+                        gl.pitch = DashboardFragment.lastAccelLeftToken.getPitchL();
                         insertAndTransfer(gl, EntityType.Glove);
                         _timeframeL = timestamp;
                         System.out.println("Hit Left! " + _hitCountL++);
@@ -151,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
                         gl.x = DashboardFragment.lastAccelRightToken.get_xR();
                         gl.y = DashboardFragment.lastAccelRightToken.get_yR();
                         gl.z = DashboardFragment.lastAccelRightToken.get_zR();
+                        gl.roll = DashboardFragment.lastAccelRightToken.getRollR();
+                        gl.pitch = DashboardFragment.lastAccelRightToken.getPitchR();
                         insertAndTransfer(gl, EntityType.Glove);
                         _timeframeR = timestamp;
                         System.out.println("Hit Right!" + _hitCountR++);

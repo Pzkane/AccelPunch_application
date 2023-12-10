@@ -15,4 +15,6 @@ public class Glove extends RoomEntity {
     public Integer x;
     public Integer y;
     public Integer z;
+    public Float roll;
+    public Float pitch;
 }

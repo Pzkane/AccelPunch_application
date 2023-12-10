@@ -12,6 +12,13 @@ public class GlovesTokenizer {
         token.setXAccelR(Integer.parseInt(tokens[4])); // right hand acceleration X
         token.setYAccelR(Integer.parseInt(tokens[5])); // right hand acceleration Y
         token.setZAccelR(Integer.parseInt(tokens[6])); // right hand acceleration Z
+
+        token.setRollL(Float.parseFloat(tokens[7])); // left hand roll angle
+        token.setPitchL(Float.parseFloat(tokens[8])); // left hand pitch angle
+
+        token.setRollR(Float.parseFloat(tokens[9])); // right hand roll angle
+        token.setPitchR(Float.parseFloat(tokens[10])); // right hand pitch angle
+
         return token;
     }
 }

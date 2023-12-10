@@ -65,7 +65,9 @@ public class LocalDatabaseService {
                                         "\"glove\":"+glove.glove + "," +
                                         "\"x\":"+glove.x + "," +
                                         "\"y\":"+glove.y + "," +
-                                        "\"z\":"+glove.z +
+                                        "\"z\":"+glove.z + "," +
+                                        "\"roll\":"+glove.roll + "," +
+                                        "\"pitch\":"+glove.pitch +
                                         "}"));
                     }
                     payload.put("gloves", gloves);

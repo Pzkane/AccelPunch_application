@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b8428602b31c8e2a10d431047366e662",
+    "identityHash": "5d23186ea5f083312091c231adfb49a6",
     "entities": [
       {
         "tableName": "Glove",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `glove` INTEGER NOT NULL, `x` INTEGER, `y` INTEGER, `z` INTEGER, PRIMARY KEY(`timestamp`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `glove` INTEGER NOT NULL, `x` INTEGER, `y` INTEGER, `z` INTEGER, `roll` REAL, `pitch` REAL, PRIMARY KEY(`timestamp`))",
         "fields": [
           {
             "fieldPath": "time",
@@ -36,6 +36,18 @@
             "fieldPath": "z",
             "columnName": "z",
             "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "roll",
+            "columnName": "roll",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "pitch",
+            "columnName": "pitch",
+            "affinity": "REAL",
             "notNull": false
           }
         ],
@@ -96,7 +108,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b8428602b31c8e2a10d431047366e662')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d23186ea5f083312091c231adfb49a6')"
     ]
   }
 }
