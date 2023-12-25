@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "cbd6b2523e439587d227408f5330ba10",
+    "version": 2,
+    "identityHash": "52aad79344b0439fa9280ded4859e909",
     "entities": [
       {
         "tableName": "Glove",
@@ -105,7 +105,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "t3",
+        "tableName": "T3Vertebrae",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`timestamp` INTEGER NOT NULL, `w` REAL NOT NULL, `x` REAL, `y` REAL, `z` REAL, `xg` REAL, `yg` REAL, `zg` REAL, PRIMARY KEY(`timestamp`))",
         "fields": [
           {
@@ -170,7 +170,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cbd6b2523e439587d227408f5330ba10')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '52aad79344b0439fa9280ded4859e909')"
     ]
   }
 }

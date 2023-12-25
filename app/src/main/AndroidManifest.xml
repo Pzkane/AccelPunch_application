@@ -17,6 +17,7 @@
         android:theme="@style/Theme.AccelPunch"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <service android:name="com.mbientlab.metawear.android.BtleService" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

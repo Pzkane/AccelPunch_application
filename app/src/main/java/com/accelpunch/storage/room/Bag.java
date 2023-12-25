@@ -13,5 +13,4 @@ public class Bag extends RoomEntity {
     public Integer y;
     public Integer z;
     public Integer temp;
-
 }

@@ -9,6 +9,7 @@ import com.accelpunch.MainActivity;
 import com.accelpunch.net.HttpRequest;
 import com.accelpunch.storage.room.Bag;
 import com.accelpunch.storage.room.Glove;
+import com.accelpunch.storage.room.T3Vertebrae;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.json.JSONArray;
@@ -23,13 +24,15 @@ public class LocalDatabaseService {
     static private final Integer _batchSize = 30;
     static private List<Glove> gloveResultSet;
     static private List<Bag> bagRecordResultSet;
+    static private List<T3Vertebrae> t3VertebraeRecordResultSet;
+
 
     static public void transferAllDataToServer (Activity context) {
-        transferGloveDataToServer(context);
+        transferGloveAndT3DataToServer(context);
         transferBagDataToServer(context);
     }
 
-    static public void transferGloveDataToServer (Activity context) {
+    static public void transferGloveAndT3DataToServer (Activity context) {
         HttpRequest requestGloves = new HttpRequest(context, MainActivity.serverIP, MainActivity.serverPort.toString(), "POST", null);
         final Observer<String> responseObserver = new Observer<String>() {
             @Override
@@ -41,6 +44,7 @@ public class LocalDatabaseService {
                         System.out.println("Response: " + text);
                         System.out.println("Connection OK");
                         MainActivity.database.gloveDao().delete(gloveResultSet);
+                        MainActivity.database.t3VertebraeDao().delete(t3VertebraeRecordResultSet);
                     }
                 } catch (JSONException e) {
                     System.out.println("Error while creating JSON object response for glove dataset transfer");
@@ -49,14 +53,19 @@ public class LocalDatabaseService {
         };
         requestGloves.getResponse().observe((LifecycleOwner) context, responseObserver);
         ListenableFuture<List<Glove>> futureGloves = MainActivity.database.gloveDao().getAll();
+        ListenableFuture<List<T3Vertebrae>> futureT3Vertebrae = MainActivity.database.t3VertebraeDao().getAll();
+
         futureGloves.addListener(new Runnable() {
             @Override
             public void run() {
                 try {
                     gloveResultSet = futureGloves.get();
+                    t3VertebraeRecordResultSet = futureT3Vertebrae.get();
+
                     if (gloveResultSet.size() < _batchSize) return;
                     System.out.println("Glove count on transfer after purge: " + gloveResultSet.size());
                     JSONObject payload = new JSONObject();
+
                     JSONArray gloves = new JSONArray();
                     for (Glove glove : gloveResultSet) {
                         gloves.put(new JSONObject(
@@ -71,6 +80,23 @@ public class LocalDatabaseService {
                                         "}"));
                     }
                     payload.put("gloves", gloves);
+
+                    JSONArray t3Records = new JSONArray();
+                    for (T3Vertebrae t3 : t3VertebraeRecordResultSet) {
+                        t3Records.put(new JSONObject(
+                                "{" +
+                                        "\"timestamp\":"+t3.time + "," +
+                                        "\"w\":"+t3.w + "," +
+                                        "\"x\":"+t3.x + "," +
+                                        "\"y\":"+t3.y + "," +
+                                        "\"z\":"+t3.z + "," +
+                                        "\"xg\":"+t3.xg + "," +
+                                        "\"yg\":"+t3.yg + "," +
+                                        "\"zg\":"+t3.zg +
+                                        "}"));
+                    }
+                    payload.put("t3", t3Records);
+
                     System.out.println(payload.toString());
                     System.out.println(gloveResultSet.toArray().length);
                     requestGloves.setPayload(payload.toString());

@@ -1,7 +1,12 @@
 package com.accelpunch;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -17,6 +22,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
+import com.accelpunch.ble.MWBoardMAC;
 import com.accelpunch.databinding.ActivityMainBinding;
 import com.accelpunch.net.Client;
 import com.accelpunch.net.HttpRequest;
@@ -28,19 +34,36 @@ import com.accelpunch.storage.room.Bag;
 import com.accelpunch.storage.room.Glove;
 import com.accelpunch.storage.room.LocalDatabase;
 import com.accelpunch.storage.room.RoomEntity;
+import com.accelpunch.storage.room.T3Vertebrae;
 import com.accelpunch.storage.service.LocalDatabaseService;
 import com.accelpunch.ui.dashboard.DashboardFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
+import com.mbientlab.metawear.Data;
+import com.mbientlab.metawear.MetaWearBoard;
+import com.mbientlab.metawear.Route;
+import com.mbientlab.metawear.Subscriber;
+import com.mbientlab.metawear.android.BtleService;
+import com.mbientlab.metawear.builder.RouteBuilder;
+import com.mbientlab.metawear.builder.RouteComponent;
+import com.mbientlab.metawear.data.Acceleration;
+import com.mbientlab.metawear.data.Quaternion;
+import com.mbientlab.metawear.module.SensorFusionBosch;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+import bolts.CancellationTokenSource;
+import bolts.Continuation;
+import bolts.Task;
+
+public class MainActivity extends AppCompatActivity implements ServiceConnection {
     private ActivityMainBinding _binding;
     private AlertDialog.Builder _alertBuilder;
+    private MWBoardMAC _sensor_T3;
+    private BtleService.LocalBinder _serviceBinder;
     static public Client clientGloves = null, clientBag = null;
 
     // Static node IPs
@@ -60,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(_binding.getRoot());
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
+        getApplicationContext().bindService(new Intent(this, BtleService.class),
+                this, Context.BIND_AUTO_CREATE);
+
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -82,7 +108,79 @@ public class MainActivity extends AppCompatActivity {
 
     private Integer _hitCountL = 0, _hitCountR = 0, _hitCountBag = 0;
     private Long _timeframeL = null, _timeframeR = null, _timeframeBag = null;
-    private enum EntityType { Glove, Bag };
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        _serviceBinder = (BtleService.LocalBinder) service;
+        _sensor_T3 = new MWBoardMAC(this, "F1:4C:58:5C:33:2D", _serviceBinder);
+        _sensor_T3.retrieveBoard().continueWith(new Continuation<Void, Void>()  {
+            @Override
+            public Void then(Task<Void> task) throws Exception {
+                if (task.isFaulted()) {
+                    System.out.println("Failed to connect to MW board");
+                    return null;
+                }
+                System.out.println("Connected to MW board");
+                System.out.println("Retrieving MW board");
+                MetaWearBoard board = null;
+                try {
+                    board = _sensor_T3.getBoard();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("MAC of a connected board: " + board.getMacAddress());
+                System.out.println("Board model: " + board.getModelString());
+                final SensorFusionBosch sensorFusion = board.getModule(SensorFusionBosch.class);
+                sensorFusion.configure()
+                        .mode(SensorFusionBosch.Mode.NDOF)
+                        .accRange(SensorFusionBosch.AccRange.AR_16G)
+                        .gyroRange(SensorFusionBosch.GyroRange.GR_2000DPS)
+                        .commit();
+
+                sensorFusion.quaternion().addRouteAsync(new RouteBuilder() {
+                    @Override
+                    public void configure(RouteComponent source) {
+                        source.stream(new Subscriber() {
+                            @Override
+                            public void apply(Data data, Object... env) {
+                                _sensor_T3.setQuaternion(data.value(Quaternion.class));
+                            }
+                        });
+                    }
+                }).continueWith(new Continuation<Route, Void>() {
+                    @Override
+                    public Void then(Task<Route> task) throws Exception {
+                        sensorFusion.quaternion().start();
+                        sensorFusion.linearAcceleration().addRouteAsync(new RouteBuilder() {
+                            @Override
+                            public void configure(RouteComponent source) {
+                                source.stream(new Subscriber() {
+                                    @Override
+                                    public void apply(Data data, Object... env) {
+                                        _sensor_T3.setAcceleration(data.value(Acceleration.class));
+                                    }
+                                });
+                            }
+                        }).continueWith(new Continuation<Route, Void>() {
+                            @Override
+                            public Void then(Task<Route> task) throws Exception {
+                                sensorFusion.linearAcceleration().start();
+                                return null;
+                            }
+                        });
+                        sensorFusion.start();
+                        return null;
+                    }
+                });
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) { }
+
+    private enum EntityType { Glove, Bag, T3 };
 
     private void insertAndTransfer(RoomEntity nodeData, EntityType type) {
         switch (type) {
@@ -91,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case Bag:
                 database.bagDao().insert((Bag) nodeData);
+                break;
+            case T3:
+                database.t3VertebraeDao().insert((T3Vertebrae) nodeData);
                 break;
             default:
                 break;
@@ -135,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                         gl.z = DashboardFragment.lastAccelLeftToken.get_zL();
                         gl.roll = DashboardFragment.lastAccelLeftToken.getRollL();
                         gl.pitch = DashboardFragment.lastAccelLeftToken.getPitchL();
+                        registerAndInsertT3(gl.time);
                         insertAndTransfer(gl, EntityType.Glove);
                         _timeframeL = timestamp;
                         System.out.println("Hit Left! " + _hitCountL++);
@@ -155,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
                         gl.z = DashboardFragment.lastAccelRightToken.get_zR();
                         gl.roll = DashboardFragment.lastAccelRightToken.getRollR();
                         gl.pitch = DashboardFragment.lastAccelRightToken.getPitchR();
+                        registerAndInsertT3(gl.time);
                         insertAndTransfer(gl, EntityType.Glove);
                         _timeframeR = timestamp;
                         System.out.println("Hit Right!" + _hitCountR++);
@@ -174,6 +277,20 @@ public class MainActivity extends AppCompatActivity {
                     dashGraphL.onDataChanged(false, true);
                     dashGraphR.onDataChanged(false, true);
                 }
+            }
+
+            private void registerAndInsertT3(long time) {
+                T3Vertebrae t3 = new T3Vertebrae();
+                t3.time = time;
+                t3.w = _sensor_T3.getQuaternion().w();
+                t3.x = _sensor_T3.getQuaternion().x();
+                t3.y = _sensor_T3.getQuaternion().y();
+                t3.z = _sensor_T3.getQuaternion().z();
+                t3.xg = _sensor_T3.getAcceleration().x();
+                t3.yg = _sensor_T3.getAcceleration().y();
+                t3.zg = _sensor_T3.getAcceleration().z();
+                // This will not transfer as T3 records are exported only with glove records
+                insertAndTransfer(t3, EntityType.T3);
             }
         };
         final Observer<String> clientBagDataObserver = new Observer<String>() {
@@ -287,5 +404,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Unbind the service when the activity is destroyed
+        getApplicationContext().unbindService(this);
+        _sensor_T3.destroy();
     }
 }
